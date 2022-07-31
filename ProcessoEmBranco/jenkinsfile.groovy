@@ -6,10 +6,10 @@ pipeline {
 	        MAJOR = '1'
 	        MINOR = '0'
 	        //Orchestrator Services
-	        UIPATH_ORCH_URL = "https://cloud.uipath.com/"
-	        UIPATH_ORCH_LOGICAL_NAME = "anupaminc"
-	        UIPATH_ORCH_TENANT_NAME = "Descriptify"
-	        UIPATH_ORCH_FOLDER_NAME = "Default"
+	        UIPATH_ORCH_URL = "https://cloud.uipath.com/poctenda/DefaultTenant/orchestrator_/"
+	        UIPATH_ORCH_LOGICAL_NAME = "carneiro.ac@gmail.com"
+	        UIPATH_ORCH_TENANT_NAME = "DefaultTenant"
+	        UIPATH_ORCH_FOLDER_NAME = "carneiro.ac@gmail.com's workspace (Converted)"
 	    }
 	
 
@@ -78,6 +78,14 @@ pipeline {
 	         // Deploy to Production Step
 	        stage('Deploy to Production') {
 	            steps {
+					//mail bcc: '', body: 'Please check ${env.JOB_NAME} for approving deployment into Test stage.', cc:
+					'', from: '', replyTo: '', subject: 'Jenkins Pipeline Approval Required', to: 'carneiro.ac@gmail.com'
+
+					timeout(time: 14, unit: 'DAYS') {
+						input message: 'Please approve the deployment of this package into Production', submitter: env.APPROVERS
+					}
+
+					build job: 'deploy-in-production', parameters: [string(name: 'PACKAGE_PATH', value: "${env.JENKINS_HOME}\\jobs\\${env.JOB_NAME}\\builds\\${env.BUILD_NUMBER}")]
 	                echo 'Deploy to Production'
 	                }
 	            }
@@ -97,7 +105,7 @@ pipeline {
 	    // 
 	    post {
 	        success {
-	            echo 'Deployment has been completed!'
+	            echo "Process ${env.GIT_URL} with version ${MAJOR}.${MINOR}.${env.BUILD_NUMBER} was successfully deployed into Production"
 	        }
 	        failure {
 	          echo "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.JOB_DISPLAY_URL})"
